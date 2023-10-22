@@ -1,3 +1,5 @@
+import Dependencies.Version
+
 ThisBuild / scalaVersion := "2.13.12"
 
 ThisBuild / version := "1.0-SNAPSHOT"
@@ -45,5 +47,16 @@ lazy val myFrameworkCore = (project in file("src/my-framework-core"))
     name := """my-framework-core""",
     libraryDependencies ++= List(
       "org.typelevel" %% "cats-core" % "2.10.0"
+    )
+  )
+
+/////////////////////////////////////////// partie spark
+
+lazy val dataApp = (project in file("src/data-app"))
+  .settings(
+    name := """data-app""",
+    libraryDependencies ++= List(
+      "org.apache.spark" %% "spark-core" % Version.spark,
+      "org.apache.spark" %% "spark-sql" % Version.spark
     )
   )
