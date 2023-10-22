@@ -1,3 +1,5 @@
 package adressesExternes.fr.states
 
-trait ReferencesExternesFrState {}
+trait ReferencesExternesFrState {
+  def kind: String
+}

@@ -12,9 +12,7 @@ import referencesExternes.fr.commands.CreateAdresseExterneFrCommand
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
-class CreateAdresseExterneFrHandler(
-    referenceExterneFrRepository: AdresseExterneFrRepository
-)(implicit ec: ExecutionContext) {
+class CreateAdresseExterneFrHandler()(implicit ec: ExecutionContext) {
   def onCommand(
       cmd: CreateAdresseExterneFrCommand
   ): Future[ValidatedErr[ReferencesExternesFrEvent]] = Future.successful(

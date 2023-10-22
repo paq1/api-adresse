@@ -1,38 +1,38 @@
 package adressesExternes.fr.controllers
 
-import com.google.inject.Inject
-import play.api.libs.json.{JsNumber, JsSuccess, JsValue, Json, Reads, Writes}
-import play.api.mvc.{
-  Action,
-  AnyContent,
-  BaseController,
-  ControllerComponents,
-  Request
-}
-
-import scala.concurrent.{ExecutionContext, Future}
 import adressesExternes.fr.commandHandler.CreateAdresseExterneFrHandler
 import adressesExternes.fr.events.{
   ReferenceExterneFrCreated,
   ReferencesExternesFrEvent
 }
 import adressesExternes.fr.services.AdressesExterneFrRepositoryMongo
-import adressesExternes.fr.states.CreateReferenceExterneFrState
+import adressesExternes.fr.states.{
+  CreateReferenceExterneFrState,
+  ReferencesExternesFrState
+}
 import cats.data.Validated
 import cats.data.Validated.{Invalid, Valid}
+import com.google.inject.Inject
 import errors.data.ValidatedErr
+import play.api.Configuration
+import play.api.libs.json._
+import play.api.mvc._
 import referencesExternes.fr.commands.CreateAdresseExterneFrCommand
 import referencesExternes.fr.shared.InfoReferenceExterneFr
+
+import scala.concurrent.{ExecutionContext, Future}
 class AdresseExterneFrWriteController @Inject() (
-    override val controllerComponents: ControllerComponents
+    override val controllerComponents: ControllerComponents,
+    store: AdressesExterneFrRepositoryMongo
 )(implicit ec: ExecutionContext)
     extends BaseController {
 
   def reducer(
       event: ReferenceExterneFrCreated
   ): CreateReferenceExterneFrState = {
-    CreateReferenceExterneFrState(infoReferenceExterneFr =
-      event.infoReferenceExterneFr
+    CreateReferenceExterneFrState(
+      infoReferenceExterneFr = event.infoReferenceExterneFr,
+      kind = "create"
     )
   }
 
@@ -74,11 +74,17 @@ class AdresseExterneFrWriteController @Inject() (
     case _ => Json.obj()
   }
 
-  val adresseExterneRepository = new AdressesExterneFrRepositoryMongo()
+  implicit val owritestate: Writes[ReferencesExternesFrState] = {
+    case CreateReferenceExterneFrState(infoReferenceExterneFr, kind) =>
+      Json.obj(
+        "numeroRue" -> infoReferenceExterneFr.numeroRue,
+        "nomRue" -> infoReferenceExterneFr.nomRue,
+        "kind" -> kind
+      )
+    case _ => Json.obj()
+  }
 
-  val createHandler = new CreateAdresseExterneFrHandler(
-    adresseExterneRepository
-  )
+  val createHandler = new CreateAdresseExterneFrHandler()
 
   def create(): Action[AnyContent] = Action.async {
     implicit request: Request[AnyContent] =>
@@ -111,13 +117,25 @@ class AdresseExterneFrWriteController @Inject() (
             case Valid(a)   => Future.successful(a)
             case Invalid(e) => Future.failed(new Exception(s"$e"))
           }
-        savingStore <- Future.successful() // MKDMKD todo save in store
+        savingStore <- store.insert(s)
         savingJournal <- Future.successful() // MKDMKD todo save in journal
       } yield Ok(
         Json.obj(
           "data" -> Json.obj("attributes" -> Json.toJson(e))
         )
       )
+  }
+
+  def getAll(): Action[AnyContent] = Action.async {
+    implicit request: Request[AnyContent] =>
+      store
+        .fetchMany()
+        .map { list =>
+          val jsList = list.map(e => Json.toJson(e))
+          Ok(
+            JsArray(jsList)
+          )
+        }
   }
 
 }

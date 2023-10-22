@@ -15,7 +15,6 @@ lazy val api = (project in file("src/api"))
     name := """api""",
     libraryDependencies ++= List(
       guice,
-      "org.mongodb.scala" %% "mongo-scala-driver" % "4.8.1",
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
     )
   )
@@ -35,7 +34,10 @@ lazy val models = (project in file("src/models"))
 lazy val myFrameworkInfra = (project in file("src/my-framework-infra"))
   .dependsOn(myFrameworkCore)
   .settings(
-    name := """my-framework-infra"""
+    name := """my-framework-infra""",
+    libraryDependencies ++= List(
+      "org.mongodb.scala" %% "mongo-scala-driver" % "4.9.0"
+    )
   )
 
 lazy val myFrameworkCore = (project in file("src/my-framework-core"))
