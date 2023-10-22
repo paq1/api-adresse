@@ -9,11 +9,11 @@ lazy val root = (project in file("."))
   )
 
 lazy val api = (project in file("src/api"))
-  .dependsOn(models, core)
+  .dependsOn(models, core, myFrameworkInfra)
   .enablePlugins(PlayScala)
   .settings(
     name := """api""",
-    libraryDependencies ++= Seq(
+    libraryDependencies ++= List(
       guice,
       "org.mongodb.scala" %% "mongo-scala-driver" % "4.8.1",
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
@@ -21,7 +21,7 @@ lazy val api = (project in file("src/api"))
   )
 
 lazy val core = (project in file("src/core"))
-  .dependsOn(models)
+  .dependsOn(models, myFrameworkCore)
   .settings(
     name := """core"""
   )
@@ -29,4 +29,19 @@ lazy val core = (project in file("src/core"))
 lazy val models = (project in file("src/models"))
   .settings(
     name := """models"""
+  )
+
+// MKDMKD todo en faire une lib à terme
+lazy val myFrameworkInfra = (project in file("src/my-framework-infra"))
+  .dependsOn(myFrameworkCore)
+  .settings(
+    name := """my-framework-infra"""
+  )
+
+lazy val myFrameworkCore = (project in file("src/my-framework-core"))
+  .settings(
+    name := """my-framework-core""",
+    libraryDependencies ++= List(
+      "org.typelevel" %% "cats-core" % "2.10.0"
+    )
   )
