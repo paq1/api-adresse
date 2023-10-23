@@ -40,14 +40,16 @@ object DimAdresseFrMoselle extends SimpleJob {
       s"******************************* ng ligne apres where = $nbLigneApresWhere"
     )
 
-    selectColumnRenameDf
-      .show(true)
-
     // MKDMKD fixme ecrire la nouvelle donnée dans le csv output
-//    transformDf.write
+//    adresseAvecToutesLesValeursDefinieDf
+//      .coalesce(1)
+//      .write
+//      .options(
+//        Map("header" -> "true")
+//      )
+//      .format("csv")
 //      .mode(SaveMode.Overwrite)
-//      .csv("data/output/adresses-57.csv")
-//      .show(true)
+//      .csv("data/output/adresses-57")
   }
 
   override def jobName: String = "dim-adresses-fr-57"
