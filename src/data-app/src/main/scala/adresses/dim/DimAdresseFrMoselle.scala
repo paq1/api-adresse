@@ -1,11 +1,9 @@
 package adresses.dim
-
-import adresses.job.SimpleJob
 import org.apache.spark.sql.functions.{col, lit}
-import org.apache.spark.sql.{DataFrame, SaveMode}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
-object DimAdresseFrMoselle extends SimpleJob {
-  override def run(): Unit = {
+object DimAdresseFrMoselle extends CanComputeDim {
+  override def compute(spark: SparkSession): DataFrame = {
     val adresseFrMoselle: DataFrame =
       spark.read
         .options(Map("header" -> "true", "delimiter" -> ";"))
@@ -29,28 +27,6 @@ object DimAdresseFrMoselle extends SimpleJob {
           col("ville").isNotNull
       )
 
-    val nombreDeLigne = selectColumnRenameDf
-      .count()
-
-    val nbLigneApresWhere = adresseAvecToutesLesValeursDefinieDf
-      .count()
-
-    println(s"******************************* ng ligne = $nombreDeLigne")
-    println(
-      s"******************************* ng ligne apres where = $nbLigneApresWhere"
-    )
-
-    // MKDMKD fixme ecrire la nouvelle donnée dans le csv output
-//    adresseAvecToutesLesValeursDefinieDf
-//      .coalesce(1)
-//      .write
-//      .options(
-//        Map("header" -> "true")
-//      )
-//      .format("csv")
-//      .mode(SaveMode.Overwrite)
-//      .csv("data/output/adresses-57")
+    adresseAvecToutesLesValeursDefinieDf
   }
-
-  override def jobName: String = "dim-adresses-fr-57"
 }

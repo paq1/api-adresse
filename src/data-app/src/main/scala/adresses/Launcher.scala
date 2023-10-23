@@ -1,7 +1,7 @@
 package adresses
 
-import adresses.dim.DimAdresseFrMoselle
+import adresses.job.JobCreateAdresseFrMoselle
 
 object Launcher extends App {
-  DimAdresseFrMoselle.run()
+  JobCreateAdresseFrMoselle.run()
 }
