@@ -2,9 +2,21 @@ package adresses.dim
 
 import adresses.job.SimpleJob
 import org.apache.spark.sql.functions.{col, lit}
-import org.apache.spark.sql.{DataFrame, SaveMode}
+import org.apache.spark.sql.{DataFrame, Encoder, Encoders}
+
+case class ModelDataAdresse(
+    id: String,
+    numeroRue: String,
+    codePostal: String,
+    ville: String,
+    pays: String
+)
 
 object DimAdresseFrMoselle extends SimpleJob {
+
+  implicit val ed: Encoder[ModelDataAdresse] =
+    Encoders.product[ModelDataAdresse]
+
   override def run(): Unit = {
     val adresseFrMoselle: DataFrame =
       spark.read
@@ -29,26 +41,19 @@ object DimAdresseFrMoselle extends SimpleJob {
           col("ville").isNotNull
       )
 
-    val nombreDeLigne = selectColumnRenameDf
-      .count()
-
-    val nbLigneApresWhere = adresseAvecToutesLesValeursDefinieDf
-      .count()
-
-    println(s"******************************* ng ligne = $nombreDeLigne")
-    println(
-      s"******************************* ng ligne apres where = $nbLigneApresWhere"
-    )
-
-    selectColumnRenameDf
+    adresseAvecToutesLesValeursDefinieDf
       .show(true)
 
-    // MKDMKD fixme ecrire la nouvelle donnée dans le csv output
-//    transformDf.write
-//      .mode(SaveMode.Overwrite)
-//      .csv("data/output/adresses-57.csv")
-//      .show(true)
+    saveCsv(adresseAvecToutesLesValeursDefinieDf)
   }
 
   override def jobName: String = "dim-adresses-fr-57"
+
+  private def saveCsv(df: DataFrame): Unit = {
+    // MKDMKD fixme passer par hadoop pour save le csv
+    val elements: List[ModelDataAdresse] = df
+      .as[ModelDataAdresse]
+      .collect()
+      .toList
+  }
 }
