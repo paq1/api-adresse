@@ -1,26 +1,21 @@
 package adresses.job
 
+import adresses.data.ModelDataAdresse
 import adresses.dim.DimAdresseFrMoselle
+import shared.tools.DataFrameSaver
 
 object JobCreateAdresseFrMoselle extends SimpleJob {
+
+  val dataFrameSaver = new DataFrameSaver
   override def run(): Unit = {
 
-    DimAdresseFrMoselle
+    val moselleAdresseDf = DimAdresseFrMoselle
       .compute(spark)
-      .show(true)
 
-    // todo call l'api pour créer ces adresses
+    dataFrameSaver
+      .saveDataFrame[ModelDataAdresse](moselleAdresseDf, "")
 
-    // MKDMKD fixme ecrire la nouvelle donnée dans le csv output
-//    adresseAvecToutesLesValeursDefinieDf
-//      .coalesce(1)
-//      .write
-//      .options(
-//        Map("header" -> "true")
-//      )
-//      .format("csv")
-//      .mode(SaveMode.Overwrite)
-//      .csv("data/output/adresses-57")
+    // todo (call l'api / topic kafka) pour créer ces adresses
   }
 
   override def jobName: String = "dim-adresses-fr-57"
