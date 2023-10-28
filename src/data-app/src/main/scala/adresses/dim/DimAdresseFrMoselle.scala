@@ -1,8 +1,8 @@
 package adresses.dim
-
-import adresses.job.SimpleJob
 import org.apache.spark.sql.functions.{col, lit}
 import org.apache.spark.sql.{DataFrame, Encoder, Encoders}
+
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 case class ModelDataAdresse(
     id: String,
@@ -12,12 +12,11 @@ case class ModelDataAdresse(
     pays: String
 )
 
-object DimAdresseFrMoselle extends SimpleJob {
+object DimAdresseFrMoselle extends CanComputeDim {
 
   implicit val ed: Encoder[ModelDataAdresse] =
     Encoders.product[ModelDataAdresse]
-
-  override def run(): Unit = {
+  override def compute(spark: SparkSession): DataFrame = {
     val adresseFrMoselle: DataFrame =
       spark.read
         .options(Map("header" -> "true", "delimiter" -> ";"))
@@ -44,10 +43,9 @@ object DimAdresseFrMoselle extends SimpleJob {
     adresseAvecToutesLesValeursDefinieDf
       .show(true)
 
-    saveCsv(adresseAvecToutesLesValeursDefinieDf)
-  }
+    adresseAvecToutesLesValeursDefinieDf
 
-  override def jobName: String = "dim-adresses-fr-57"
+  }
 
   private def saveCsv(df: DataFrame): Unit = {
     // MKDMKD fixme passer par hadoop pour save le csv

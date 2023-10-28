@@ -118,7 +118,7 @@ class AdresseExterneFrWriteController @Inject() (
             case Invalid(e) => Future.failed(new Exception(s"$e"))
           }
         savingStore <- store.insert(s)
-        savingJournal <- Future.successful() // MKDMKD todo save in journal
+        savingJournal <- Future.successful(()) // MKDMKD todo save in journal
       } yield Ok(
         Json.obj(
           "data" -> Json.obj("attributes" -> Json.toJson(e))
