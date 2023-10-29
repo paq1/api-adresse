@@ -13,9 +13,9 @@ object JobCreateAdresseFrMoselle extends SimpleJob {
       .compute(spark)
 
     dataFrameSaver
-      .saveDataFrame[ModelDataAdresse](
+      .saveDataFrame(
         moselleAdresseDf,
-        "/data/output/adresse-57.csv"
+        "/data/output/adresse-57"
       )
 
     // todo (call l'api / topic kafka) pour créer ces adresses

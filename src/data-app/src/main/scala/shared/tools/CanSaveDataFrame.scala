@@ -1,9 +1,7 @@
 package shared.tools
 
-import org.apache.spark.sql.{DataFrame, Encoder}
+import org.apache.spark.sql.DataFrame
 
 trait CanSaveDataFrame {
-  def saveDataFrame[T <: CanBeCsvLine](df: DataFrame, dest: String)(implicit
-      encoder: Encoder[T]
-  ): Unit
+  def saveDataFrame(df: DataFrame, dest: String): Unit
 }
