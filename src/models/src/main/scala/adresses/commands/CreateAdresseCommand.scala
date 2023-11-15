@@ -7,7 +7,4 @@ case class CreateAdresseCommand(
     ville: String,
     pays: String,
     referenceExterne: Option[String]
-) extends AdresseCommand {}
-object CreateAdresseCommand {
-  // MKDMKD todo mettre ici les converters json
-}
+) extends AdresseCommand

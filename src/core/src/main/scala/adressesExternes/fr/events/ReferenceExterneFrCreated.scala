@@ -9,6 +9,3 @@ case class ReferenceExterneFrCreated(
     at: Instant,
     by: String
 ) extends ReferencesExternesFrEvent
-object ReferenceExterneFrCreated {
-  // MKDMKD todo mettre ici les converters json (neasted le champs info)
-}

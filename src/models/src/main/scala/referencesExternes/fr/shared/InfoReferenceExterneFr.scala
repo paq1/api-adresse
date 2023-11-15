@@ -8,6 +8,3 @@ case class InfoReferenceExterneFr(
     pays: String,
     position: Option[(Double, Double)]
 )
-object InfoReferenceExterneFr {
-  // MKDMKD todo mettre ici les converters json
-}

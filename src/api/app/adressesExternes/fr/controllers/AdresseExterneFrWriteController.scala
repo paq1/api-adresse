@@ -1,20 +1,13 @@
 package adressesExternes.fr.controllers
 
 import adressesExternes.fr.commandHandler.CreateAdresseExterneFrHandler
-import adressesExternes.fr.events.{
-  ReferenceExterneFrCreated,
-  ReferencesExternesFrEvent
-}
+import adressesExternes.fr.events.{ReferenceExterneFrCreated, ReferencesExternesFrEvent}
 import adressesExternes.fr.services.AdressesExterneFrRepositoryMongo
-import adressesExternes.fr.states.{
-  CreateReferenceExterneFrState,
-  ReferencesExternesFrState
-}
+import adressesExternes.fr.states.{CreateReferenceExterneFrState, ReferencesExternesFrState}
 import cats.data.Validated
 import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
 import errors.data.ValidatedErr
-import play.api.Configuration
 import play.api.libs.json._
 import play.api.mvc._
 import referencesExternes.fr.commands.CreateAdresseExterneFrCommand
