@@ -1,13 +1,20 @@
 package adressesExternes.fr.controllers
 
 import adressesExternes.fr.commandHandler.CreateAdresseExterneFrHandler
-import adressesExternes.fr.events.{ReferenceExterneFrCreated, ReferencesExternesFrEvent}
+import adressesExternes.fr.events.{
+  ReferenceExterneFrCreated,
+  ReferencesExternesFrEvent
+}
 import adressesExternes.fr.services.AdressesExterneFrRepositoryMongo
-import adressesExternes.fr.states.{CreateReferenceExterneFrState, ReferencesExternesFrState}
+import adressesExternes.fr.states.{
+  CreateReferenceExterneFrState,
+  ReferencesExternesFrState
+}
 import cats.data.Validated
 import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
 import errors.data.ValidatedErr
+import org.mongodb.scala.bson.BsonDocument
 import play.api.libs.json._
 import play.api.mvc._
 import referencesExternes.fr.commands.CreateAdresseExterneFrCommand
@@ -110,7 +117,7 @@ class AdresseExterneFrWriteController @Inject() (
             case Valid(a)   => Future.successful(a)
             case Invalid(e) => Future.failed(new Exception(s"$e"))
           }
-        savingStore <- store.insert(s)
+        savingStore <- store.insertOne(s)
         savingJournal <- Future.successful(()) // MKDMKD todo save in journal
       } yield Ok(
         Json.obj(
@@ -122,7 +129,7 @@ class AdresseExterneFrWriteController @Inject() (
   def getAll(): Action[AnyContent] = Action.async {
     implicit request: Request[AnyContent] =>
       store
-        .fetchMany()
+        .fetchMany(BsonDocument())
         .map { list =>
           val jsList = list.map(e => Json.toJson(e))
           Ok(

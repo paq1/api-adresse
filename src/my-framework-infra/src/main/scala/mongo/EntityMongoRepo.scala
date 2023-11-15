@@ -1,13 +1,17 @@
 package mongo
 
+import cats.data.Validated.Valid
+import errors.data.ValidatedErr
 import org.mongodb.scala.bson._
 import org.mongodb.scala.{MongoClient, MongoDatabase}
+import repository.Repository
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
-trait EntityMongoRepo[S] {
+trait EntityMongoRepo[S] extends Repository[Future, S, String, BsonDocument] {
 
+  def executionContext: ExecutionContext
   def uri: String
   def collectionName: String
   def dbName: String
@@ -18,15 +22,13 @@ trait EntityMongoRepo[S] {
   private val db: MongoDatabase = clientMongo.getDatabase(dbName)
   private val collection = db.getCollection(collectionName)
 
-  def fetchMany()(implicit
-      ec: ExecutionContext
-  ): Future[List[S]] = collection
+  def fetchMany(query: BsonDocument): Future[List[S]] = collection
     .find()
     .map { element =>
       bsonCodec
         .asScala(element.toBsonDocument())
     }
-    .foldLeft(List.empty[S]){ (acc, current) =>
+    .foldLeft(List.empty[S]) { (acc, current) =>
       if (current.isDefined) {
         acc :+ current.get
       } else {
@@ -34,26 +36,25 @@ trait EntityMongoRepo[S] {
       }
     }
     .toFuture()
-    .map(_.toList)
+    .map(_.toList)(executionContext)
 
-  def fetchOne(identifiant: String)(implicit
-      ec: ExecutionContext
-  ): Future[Option[S]] = collection
-    .find(Document("id" -> identifiant))
+  def fetchOne(id: String): Future[Option[S]] = collection
+    .find(Document("id" -> id))
     .toFuture()
-    .map(_.headOption.flatMap(x => bsonCodec.asScala(x.toBsonDocument())))
+    .map(_.headOption.flatMap(x => bsonCodec.asScala(x.toBsonDocument())))(
+      executionContext
+    )
 
-  def insert(
-      element: S,
-      indexMetier: String = UUID.randomUUID().toString
-  )(implicit ec: ExecutionContext): Future[String] =
+  def insertOne(
+      element: S
+  ): Future[ValidatedErr[Unit]] =
     collection
       .insertOne(
         Document(
-          "id" -> indexMetier,
+          "id" -> UUID.randomUUID().toString,
           "data" -> bsonCodec.toBson(element)
         )
       )
       .toFuture()
-      .map(_ => indexMetier)
+      .map(_ => Valid(()))(executionContext)
 }

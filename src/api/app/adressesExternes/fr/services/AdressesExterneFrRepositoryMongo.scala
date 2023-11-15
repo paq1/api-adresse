@@ -8,7 +8,7 @@ import play.api.Configuration
 import scala.concurrent.ExecutionContext
 
 class AdressesExterneFrRepositoryMongo @Inject() (configuration: Configuration)(
-    implicit ec: ExecutionContext
+    override implicit val executionContext: ExecutionContext
 ) extends EntityMongoRepo[ReferencesExternesFrState] {
   override def uri: String = configuration.underlying.getString("mongodb.uri")
 
