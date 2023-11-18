@@ -38,7 +38,6 @@ lazy val shared = (project in file("src/shared"))
   .settings(
     name := """shared""",
     libraryDependencies ++= List(
-      guice,
       "com.typesafe.play" %% "play-json" % "2.9.4"
     )
   )
