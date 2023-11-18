@@ -11,7 +11,7 @@ lazy val root = (project in file("."))
   )
 
 lazy val api = (project in file("src/api"))
-  .dependsOn(models, core, myFrameworkInfra)
+  .dependsOn(models, core, myFrameworkInfra, shared)
   .enablePlugins(PlayScala)
   .settings(
     name := """api""",
@@ -31,7 +31,19 @@ lazy val models = (project in file("src/models"))
   .settings(
     name := """models"""
   )
+/////////////////////////////////////////// partie impl partagée
 
+lazy val shared = (project in file("src/shared"))
+  .dependsOn(models, core, myFrameworkInfra)
+  .settings(
+    name := """shared""",
+    libraryDependencies ++= List(
+      guice,
+      "com.typesafe.play" %% "play-json" % "2.9.4"
+    )
+  )
+
+/////////////////////////////////////////// partie framework
 // MKDMKD todo en faire une lib à terme
 lazy val myFrameworkInfra = (project in file("src/my-framework-infra"))
   .dependsOn(myFrameworkCore)
@@ -53,10 +65,12 @@ lazy val myFrameworkCore = (project in file("src/my-framework-core"))
 /////////////////////////////////////////// partie spark
 
 lazy val dataApp = (project in file("src/data-app"))
+  .dependsOn(shared)
   .settings(
     name := """data-app""",
     libraryDependencies ++= List(
       "org.apache.spark" %% "spark-core" % Version.spark,
-      "org.apache.spark" %% "spark-sql" % Version.spark
+      "org.apache.spark" %% "spark-sql" % Version.spark,
+      "org.scala-lang" %% "toolkit" % "0.1.7"
     )
   )

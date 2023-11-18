@@ -1,7 +1,7 @@
 package shared.tools
 import org.apache.spark.sql.{DataFrame, SaveMode}
 
-class DataFrameSaver extends CanSaveDataFrame {
+class SaverCsv extends CanSaveDataFrame {
   override def saveDataFrame(
       df: DataFrame,
       dest: String

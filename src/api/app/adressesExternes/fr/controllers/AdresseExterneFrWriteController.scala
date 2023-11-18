@@ -1,9 +1,15 @@
 package adressesExternes.fr.controllers
 
 import adressesExternes.fr.commandHandler.CreateAdresseExterneFrHandler
-import adressesExternes.fr.events.{ReferenceExterneFrCreated, ReferencesExternesFrEvent}
+import adressesExternes.fr.events.{
+  ReferenceExterneFrCreated,
+  ReferencesExternesFrEvent
+}
 import adressesExternes.fr.services.AdressesExterneFrRepositoryMongo
-import adressesExternes.fr.states.{CreateReferenceExterneFrState, ReferencesExternesFrState}
+import adressesExternes.fr.states.{
+  CreateReferenceExterneFrState,
+  ReferencesExternesFrState
+}
 import cats.data.Validated
 import cats.data.Validated.{Invalid, Valid}
 import com.google.inject.Inject
@@ -12,7 +18,7 @@ import org.mongodb.scala.bson.BsonDocument
 import play.api.libs.json._
 import play.api.mvc._
 import referencesExternes.fr.commands.CreateAdresseExterneFrCommand
-import referencesExternes.fr.shared.InfoReferenceExterneFr
+import com.adresse.json.Implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
 class AdresseExterneFrWriteController @Inject() (
@@ -28,54 +34,6 @@ class AdresseExterneFrWriteController @Inject() (
       infoReferenceExterneFr = event.infoReferenceExterneFr,
       kind = "create"
     )
-  }
-
-  implicit val oreadInfoExterneFr: Reads[InfoReferenceExterneFr] =
-    (json: JsValue) => {
-      JsSuccess(
-        InfoReferenceExterneFr(
-          numeroRue = (json \ "numeroRue").as[String],
-          nomRue = (json \ "nomRue").as[String],
-          codePostal = (json \ "codePostal").as[String],
-          ville = (json \ "ville").as[String],
-          pays = (json \ "pays").as[String],
-          position =
-            ((json \ "x").asOpt[Double], (json \ "y").asOpt[Double]) match {
-              case (Some(x), Some(y)) => Some((x, y))
-              case _                  => None
-            }
-        )
-      )
-    }
-
-  implicit val oreadCreateCommand: Reads[CreateAdresseExterneFrCommand] =
-    (json: JsValue) => {
-      JsSuccess(
-        CreateAdresseExterneFrCommand(
-          info = json.as[InfoReferenceExterneFr]
-        )
-      )
-    }
-
-  implicit val owriteCreateEvent: Writes[ReferencesExternesFrEvent] = {
-    case ReferenceExterneFrCreated(infoReferenceExterneFr, at, by) =>
-      Json.obj(
-        "numeroRue" -> infoReferenceExterneFr.numeroRue,
-        "nomRue" -> infoReferenceExterneFr.nomRue,
-        "at" -> at,
-        "by" -> by
-      )
-    case _ => Json.obj()
-  }
-
-  implicit val owriteCreateState: Writes[ReferencesExternesFrState] = {
-    case CreateReferenceExterneFrState(infoReferenceExterneFr, kind) =>
-      Json.obj(
-        "numeroRue" -> infoReferenceExterneFr.numeroRue,
-        "nomRue" -> infoReferenceExterneFr.nomRue,
-        "kind" -> kind
-      )
-    case _ => Json.obj()
   }
 
   private val createHandler = new CreateAdresseExterneFrHandler()
@@ -153,7 +111,7 @@ class AdresseExterneFrWriteController @Inject() (
         val cmd = cmdJson.as[CreateAdresseExterneFrCommand]
         createHandler.onCommand(cmd)
       }
-      .getOrElse(Future.successful(Invalid("bruh")))
+      .getOrElse(Future.successful(Invalid("on ne recoit pas de body")))
   }
 
   private def fromEventToState(

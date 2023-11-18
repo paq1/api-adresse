@@ -1,6 +1,9 @@
 package adressesExternes.fr.services
 
-import adressesExternes.fr.states.{CreateReferenceExterneFrState, ReferencesExternesFrState}
+import adressesExternes.fr.states.{
+  CreateReferenceExterneFrState,
+  ReferencesExternesFrState
+}
 import mongo.BsonCodec
 import org.mongodb.scala.bson.{BsonDocument, Document}
 import referencesExternes.fr.shared.InfoReferenceExterneFr
@@ -16,8 +19,10 @@ class AdresseExterneFrBsonCodec extends BsonCodec[ReferencesExternesFrState] {
     val codePostal = documentData.get("codePostal").asString().getValue
     val ville = documentData.get("ville").asString().getValue
     val pays = documentData.get("pays").asString().getValue
+    val id = documentData.get("id").asString().getValue
 
     val info = InfoReferenceExterneFr(
+      id = id,
       numeroRue = numeroRue,
       nomRue = nomRue,
       codePostal = codePostal,
@@ -39,6 +44,7 @@ class AdresseExterneFrBsonCodec extends BsonCodec[ReferencesExternesFrState] {
       case CreateReferenceExterneFrState(infoReferenceExterneFr, kind) =>
         Document(
           "kind" -> element.kind,
+          "id" -> infoReferenceExterneFr.id,
           "numeroRue" -> infoReferenceExterneFr.numeroRue,
           "nomRue" -> infoReferenceExterneFr.nomRue,
           "codePostal" -> infoReferenceExterneFr.codePostal,
