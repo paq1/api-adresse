@@ -59,9 +59,12 @@ class ElasticsearchAdresseFrService(
       .execute(
         search(indexName)
           .rawQuery(
-            """
+            s"""
               |{
-              |  "match_all": {}
+              |  "multi_match" : {
+              |    "query":    "$queryString",
+              |    "fields": [ "numeroRue^5", "nomRue^4", "codePostal^3", "ville^1" ]
+              |  }
               |}
               |""".stripMargin
           )
