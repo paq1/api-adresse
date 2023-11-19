@@ -84,6 +84,32 @@ class AdresseExterneFrWriteController @Inject() (
         }
   }
 
+  def deleteAll(): Action[AnyContent] = Action.async {
+    implicit request: Request[AnyContent] =>
+      // todo ajouter la suppression dans mongo aussi
+      researchAdresseFrService
+        .deleteAll()
+        //        .fetchMany(BsonDocument())
+        .map {
+          case Valid(a) =>
+            Ok(
+              Json.obj(
+                "data" -> Json.obj(
+                  "suppression" -> "succeed"
+                )
+              )
+            )
+          case Invalid(e) =>
+            InternalServerError(
+              Json.obj(
+                "error" -> Json.obj(
+                  "message" -> s"$e"
+                )
+              )
+            )
+        }
+  }
+
   private def saveStateInElasticsearch(
       state: CreateReferenceExterneFrState
   ): Future[

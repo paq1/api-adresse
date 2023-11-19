@@ -95,11 +95,11 @@ class ElasticsearchAdresseFrService(
         indexInto(indexName)
           .fields(
             "id" -> adresse.id,
-            "nomRue" -> adresse.nomRue,
-            "numeroRue" -> adresse.numeroRue,
-            "codePostal" -> adresse.codePostal,
-            "ville" -> adresse.ville,
-            "pays" -> adresse.pays
+            "nomRue" -> adresse.nomRue.toLowerCase,
+            "numeroRue" -> adresse.numeroRue.toLowerCase,
+            "codePostal" -> adresse.codePostal.toLowerCase,
+            "ville" -> adresse.ville.toLowerCase,
+            "pays" -> adresse.pays.toLowerCase
           )
           .refresh(RefreshPolicy.Immediate)
       }
@@ -114,4 +114,19 @@ class ElasticsearchAdresseFrService(
           )
       }
   }
+
+  override def deleteAll(): Future[ValidatedErr[Unit]] = client
+    .execute(
+      deleteByQuery(
+        indexName,
+        matchAllQuery()
+      )
+    )
+    .map {
+      case RequestSuccess(status, body, headers, result) => Valid(())
+      case RequestFailure(status, body, headers, error) =>
+        Invalid(
+          "[elasticsearch] erreur lors de la suppression -- match all"
+        )
+    }
 }
