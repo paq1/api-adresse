@@ -36,7 +36,7 @@ class ElasticsearchAdresseFrService(
     case response: Response[Seq[CatIndicesResponse]] =>
       if (!response.result.exists(_.index == indexName)) {
         client.execute {
-          createIndex("activities").mapping(
+          createIndex(indexName).mapping(
             properties(
               TextField("id"),
               TextField("nomRue"),
