@@ -38,7 +38,9 @@ lazy val shared = (project in file("src/shared"))
   .settings(
     name := """shared""",
     libraryDependencies ++= List(
-      "com.typesafe.play" %% "play-json" % "2.9.4"
+      "com.typesafe.play" %% "play-json" % "2.9.4",
+      "com.sksamuel.elastic4s" %% "elastic4s-client-esjava" % "8.8.1",
+      "com.sksamuel.elastic4s" %% "elastic4s-core" % "8.8.1"
     )
   )
 
@@ -64,7 +66,7 @@ lazy val myFrameworkCore = (project in file("src/my-framework-core"))
 /////////////////////////////////////////// partie spark
 
 lazy val dataApp = (project in file("src/data-app"))
-  .dependsOn(shared)
+  .dependsOn(models, core, shared)
   .settings(
     name := """data-app""",
     libraryDependencies ++= List(
