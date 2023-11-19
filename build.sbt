@@ -39,6 +39,7 @@ lazy val shared = (project in file("src/shared"))
     name := """shared""",
     libraryDependencies ++= List(
       "com.typesafe.play" %% "play-json" % "2.9.4",
+      "ch.qos.logback" % "logback-classic" % "1.4.7",
       "com.sksamuel.elastic4s" %% "elastic4s-client-esjava" % "8.8.1",
       "com.sksamuel.elastic4s" %% "elastic4s-core" % "8.8.1"
     )
