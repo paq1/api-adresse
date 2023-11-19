@@ -17,7 +17,7 @@ import errors.data.ValidatedErr
 import scala.concurrent.{ExecutionContext, Future}
 
 class ElasticsearchAdresseFrService(
-    indexName: String = "adresseFr",
+    indexName: String = "adressesfr",
     urlElasticsearch: String = "http://192.168.0.17:9200"
 )(implicit ec: ExecutionContext)
     extends ResearchAdresseFrService {

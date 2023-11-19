@@ -20,7 +20,7 @@ trait AdressesExternesFrComponents {
   )(executionContext)
 
   val researchAdresseFrService = new ElasticsearchAdresseFrService(
-    "adresseFr",
+    "adressesfr",
     "http://192.168.0.17:9200"
   )(
     executionContext
