@@ -73,8 +73,9 @@ class AdresseExterneFrWriteController @Inject() (
 
   def getAll(): Action[AnyContent] = Action.async {
     implicit request: Request[AnyContent] =>
-      store
-        .fetchMany(BsonDocument())
+      researchAdresseFrService
+        .fulltext("toto en slip")
+//        .fetchMany(BsonDocument())
         .map { list =>
           val jsList = list.map(e => Json.toJson(e))
           Ok(

@@ -4,6 +4,7 @@ import adressesExternes.fr.events.{
   ReferenceExterneFrCreated,
   ReferencesExternesFrEvent
 }
+import adressesExternes.fr.research.models.ResearchAdresseOut
 import adressesExternes.fr.states.{
   CreateReferenceExterneFrState,
   ReferencesExternesFrState
@@ -54,6 +55,19 @@ object Implicits {
         "by" -> by
       )
     case _ => Json.obj()
+  }
+
+  implicit val owriteResearchAdresseOut: Writes[ResearchAdresseOut] = { (res) =>
+    {
+      Json.obj(
+        "id" -> res.id,
+        "nomRue" -> res.nomRue,
+        "numeroRue" -> res.numeroRue,
+        "codePostal" -> res.codePostal,
+        "ville" -> res.ville,
+        "pays" -> res.pays
+      )
+    }
   }
 
   implicit val owriteCreateCommandeFr: Writes[AdresseExterneFrCommand] = {

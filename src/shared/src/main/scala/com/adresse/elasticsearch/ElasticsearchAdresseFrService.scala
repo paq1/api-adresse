@@ -13,6 +13,7 @@ import com.sksamuel.elastic4s.requests.cat.CatIndicesResponse
 import com.sksamuel.elastic4s.requests.common.RefreshPolicy
 import com.sksamuel.elastic4s._
 import errors.data.ValidatedErr
+import com.adresse.elasticsearch.Implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -50,8 +51,38 @@ class ElasticsearchAdresseFrService(
       }
   }
 
-  override def fulltext(queryString: String): Future[List[ResearchAdresseOut]] =
+  override def fulltext(
+      queryString: String
+  ): Future[List[ResearchAdresseOut]] = {
     Future.successful(Nil)
+    client
+      .execute(
+        search(indexName)
+          .rawQuery(
+            """
+              |{
+              |  "match_all": {}
+              |}
+              |""".stripMargin
+          )
+      )
+      .flatMap {
+        case RequestSuccess(status, body, headers, result) =>
+          Future.successful(
+            result.hits.hits.toList
+              .flatMap { hit =>
+                hit
+                  .safeTo[ResearchAdresseOut]
+                  .toOption
+              }
+          )
+
+        case RequestFailure(status, body, headers, error) =>
+          Future.failed(
+            new Exception("erreur elk")
+          )
+      }
+  }
 
   override def insert(
       adresse: ResearchAdresseIn
