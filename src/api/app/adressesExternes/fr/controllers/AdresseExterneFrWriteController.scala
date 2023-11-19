@@ -5,6 +5,8 @@ import adressesExternes.fr.events.{
   ReferenceExterneFrCreated,
   ReferencesExternesFrEvent
 }
+import adressesExternes.fr.research.ResearchAdresseFrService
+import adressesExternes.fr.research.models.ResearchAdresseIn
 import adressesExternes.fr.services.AdressesExterneFrRepositoryMongo
 import adressesExternes.fr.states.{
   CreateReferenceExterneFrState,
@@ -23,7 +25,8 @@ import com.adresse.json.Implicits._
 import scala.concurrent.{ExecutionContext, Future}
 class AdresseExterneFrWriteController @Inject() (
     override val controllerComponents: ControllerComponents,
-    store: AdressesExterneFrRepositoryMongo
+    store: AdressesExterneFrRepositoryMongo,
+    researchAdresseFrService: ResearchAdresseFrService
 )(implicit ec: ExecutionContext)
     extends BaseController {
 
@@ -40,39 +43,39 @@ class AdresseExterneFrWriteController @Inject() (
 
   def create(): Action[AnyContent] = Action.async {
     implicit request: Request[AnyContent] =>
-      val event: Future[ValidatedErr[ReferencesExternesFrEvent]] =
-        createACreateEvent(request.body.asJson)
-
-      val state: Future[ValidatedErr[ReferencesExternesFrState]] =
-        fromEventToState(event)
-
-      val savingEventsAndState =
-        saveEventAndStateInStoreAndJournal(event, state)
-
-      savingEventsAndState
-        .map {
-          case Valid((event, state)) =>
-            Ok(
-              Json.obj(
-                "data" -> Json.obj("attributes" -> Json.toJson(event))
-              )
-            )
-          case Invalid(e) =>
-            InternalServerError(
-              Json.obj(
-                "error" -> Json.obj(
-                  "status" -> "500",
-                  "message" -> e.toString
-                )
-              )
-            )
+      for {
+        event <- createACreateEvent(request.body.asJson).flatMap {
+          case Valid(a)   => Future.successful(a)
+          case Invalid(e) => Future.failed(new Exception(e))
         }
+        state <- fromEventToState(event).flatMap {
+          case Valid(a)   => Future.successful(a)
+          case Invalid(e) => Future.failed(new Exception(e))
+        }
+        savingMongo <- saveEventAndStateInStoreAndJournal(event, state)
+          .flatMap {
+            case Valid(a)   => Future.successful(a)
+            case Invalid(e) => Future.failed(new Exception(e))
+          }
+        savingElk <- saveStateInElasticsearch(state)
+          .flatMap {
+            case Valid(a)   => Future.successful(a)
+            case Invalid(e) => Future.failed(new Exception(e))
+          }
+      } yield {
+        Ok(
+          Json.obj(
+            "data" -> Json.obj("attributes" -> Json.toJson(event))
+          )
+        )
+      }
   }
 
   def getAll(): Action[AnyContent] = Action.async {
     implicit request: Request[AnyContent] =>
-      store
-        .fetchMany(BsonDocument())
+      researchAdresseFrService
+        .fulltext("1 Rue des Ronds Champs 57560")
+//        .fetchMany(BsonDocument())
         .map { list =>
           val jsList = list.map(e => Json.toJson(e))
           Ok(
@@ -81,26 +84,34 @@ class AdresseExterneFrWriteController @Inject() (
         }
   }
 
+  private def saveStateInElasticsearch(
+      state: CreateReferenceExterneFrState
+  ): Future[
+    ValidatedErr[Unit]
+  ] = {
+    researchAdresseFrService
+      .insert(
+        ResearchAdresseIn(
+          id = state.infoReferenceExterneFr.id,
+          nomRue = state.infoReferenceExterneFr.nomRue,
+          numeroRue = state.infoReferenceExterneFr.numeroRue,
+          codePostal = state.infoReferenceExterneFr.codePostal,
+          ville = state.infoReferenceExterneFr.codePostal,
+          pays = state.infoReferenceExterneFr.pays
+        )
+      )
+  }
+
   private def saveEventAndStateInStoreAndJournal(
-      event: Future[ValidatedErr[ReferencesExternesFrEvent]],
-      state: Future[ValidatedErr[ReferencesExternesFrState]]
+      event: ReferencesExternesFrEvent,
+      state: ReferencesExternesFrState
   ): Future[
     ValidatedErr[(ReferencesExternesFrEvent, ReferencesExternesFrState)]
   ] = {
     for {
-      e <- event
-        .flatMap {
-          case Valid(a)   => Future.successful(a)
-          case Invalid(e) => Future.failed(new Exception(s"$e"))
-        }
-      s <- state
-        .flatMap {
-          case Valid(a)   => Future.successful(a)
-          case Invalid(e) => Future.failed(new Exception(s"$e"))
-        }
-      savingStore <- store.insertOne(s)
+      savingStore <- store.insertOne(state)
       savingJournal <- Future.successful(()) // MKDMKD todo save in journal
-    } yield Valid((e, s))
+    } yield Valid((event, state))
   }
 
   private def createACreateEvent(
@@ -115,17 +126,14 @@ class AdresseExterneFrWriteController @Inject() (
   }
 
   private def fromEventToState(
-      event: Future[ValidatedErr[ReferencesExternesFrEvent]]
+      event: ReferencesExternesFrEvent
   ): Future[ValidatedErr[CreateReferenceExterneFrState]] = {
-    event
-      .map {
-        case Validated.Valid(a) =>
-          a match {
-            case ref: ReferenceExterneFrCreated => Valid(reducer(ref))
-            case _                              => Invalid("Illegal transition state")
-          }
-        case i @ Invalid(e) => i
-      }
+    event match {
+      case e @ ReferenceExterneFrCreated(infoReferenceExterneFr, at, by) =>
+        Future.successful(Valid(reducer(e)))
+      case _ => Future.successful(Invalid("Illegal event -> state"))
+    }
+
   }
 
 }

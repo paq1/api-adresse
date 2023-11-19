@@ -1,0 +1,6 @@
+{
+  "multi_match" : {
+    "query":    "this is a test",
+    "fields": [ "numeroRue", "nomRue", "codePostal", "ville" ]
+  }
+}

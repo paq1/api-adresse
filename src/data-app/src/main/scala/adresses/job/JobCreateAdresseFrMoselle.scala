@@ -28,7 +28,7 @@ object JobCreateAdresseFrMoselle extends SimpleJob {
 
     moselleAdresseDf
       .as[ModelDataAdresse]
-      .take(10)
+      .take(1000)
       .foreach(createAdresseWithApi)
 
     // todo (call l'api / topic kafka) pour créer ces adresses
